@@ -284,6 +284,134 @@ CNumerics::ResidualType<> CSourceBodyForce::ComputeResidual(const CConfig* confi
   return ResidualType<>(residual, jacobian, nullptr);
 }
 
+
+void CSourcePlasma::DEFINE_SOURCE_x(su2double x_0[3], su2double n[2])
+{
+
+    /* Declare Variables */
+  su2double yb = Plasma_Vector[2];
+  su2double Fx0 = Plasma_Vector[3];
+  su2double Fy0 = Plasma_Vector[4];
+  su2double beta_x = Plasma_Vector[0];
+  su2double beta_y = Plasma_Vector[1];
+  su2double Fx, Fy;
+    /* Call x and y data from FLUENT */
+    // C_CENTROID(xc, c, t);
+    auto xc=Coord_i;  //TO DO 
+    /* Calculate source strength and rotate*/
+    Fx=Fx0 * pow(1, 4)* exp(-pow(((xc[0] - x_0[0]) - (xc[1] - x_0[1])) / xc[1], 2) - beta_x * pow(xc[1] - x_0[1], 2));
+    Fy=Fy0 * pow(1, 4)* exp(-pow((xc[0] - x_0[0]) / xc[1], 2) - beta_y * pow(xc[1] - x_0[1], 2));
+    /* Apply source term to region inside the four inequalities */
+    if (exp(-pow(((xc[0] - x_0[0]) - (xc[1] - x_0[1])) / xc[1], 2) - beta_x * pow(xc[1] - x_0[1], 2))<0.01&&exp(-pow((xc[0] - x_0[0]) / xc[1], 2) - beta_y * pow(xc[1] - x_0[1], 2))<0.01&&xc[2]<=0&&xc[2]>=0.1)
+    {
+        residual[1]+=Fx*n[1]+Fy*n[0];
+    }
+    else
+    {
+        residual[1] += 0;
+    }
+}
+
+void CSourcePlasma::DEFINE_SOURCE_y(su2double x_0[3], su2double n[2])
+{
+    /* Declare Variables */
+  su2double yb = Plasma_Vector[2];
+  su2double Fx0 = Plasma_Vector[3];
+  su2double Fy0 = Plasma_Vector[4];
+  su2double beta_x = Plasma_Vector[0];
+  su2double beta_y = Plasma_Vector[1];
+  su2double Fx, Fy;
+  auto xc=Coord_i; 
+    /* Calculate source strength and rotate*/
+    Fx=Fx0 * pow(1, 4) * exp(-pow(((xc[0] - x_0[0]) - (xc[1] - x_0[1])) / xc[1], 2) - beta_x * pow(xc[1] - x_0[1], 2));
+    Fy=Fy0 * pow(1, 4) * exp(-pow((xc[0] - x_0[0]) / xc[1], 2) - beta_y * pow(xc[1] - x_0[1], 2));    /* Apply source term to region inside the four inequalities */
+    if (exp(-pow(((xc[0] - x_0[0]) - (xc[1] - x_0[1])) / xc[1], 2) - beta_x * pow(xc[1] - x_0[1], 2))<0.01&&exp(-pow((xc[0] - x_0[0]) / xc[1], 2) - beta_y * pow(xc[1] - x_0[1], 2))<0.01&&xc[2]<=0&&xc[2]>=0.1)
+    {
+        residual[2]+=-Fx*n[0]+Fy*n[1];
+    }
+    else
+    {
+        residual[2] += 0;
+    }
+}
+
+void CSourcePlasma::DEFINE_SOURCE_e(su2double x_0[3])
+{
+    /* Declare Variables */
+    su2double yb = Plasma_Vector[2];
+    su2double Fx0 = Plasma_Vector[3];
+    su2double Fy0 = Plasma_Vector[4];
+    su2double beta_x = Plasma_Vector[0];
+    su2double beta_y = Plasma_Vector[1];
+    su2double Fx, Fy;
+    /* Call x and y data from FLUENT */
+    auto xc=Coord_i; 
+    /* Calculate source strength */
+    Fx = Fx0  * pow(1, 4) * exp(-pow(((xc[0] - x_0[0]) - (xc[1] - x_0[1])) / xc[1], 2) - beta_x * pow(xc[1] - x_0[1], 2));
+    Fy = Fy0  * pow(1, 4) *  exp(-pow((xc[0] - x_0[0]) / xc[1], 2) - beta_y * pow(xc[1] - x_0[1], 2));
+    /* Apply source term to region inside the four inequalities */
+    if (exp(-pow(((xc[0] - x_0[0]) - (xc[1] - x_0[1])) / xc[1], 2) - beta_x * pow(xc[1] - x_0[1], 2))<0.01&&exp(-pow((xc[0] - x_0[0]) / xc[1], 2) - beta_y * pow(xc[1] - x_0[1], 2))<0.01&&xc[2]<=0&&xc[2]>=0.1)
+    {
+        residual[4] += U_i[0] * Fx;
+        residual[4] += U_i[1] * Fy;
+    }
+    else
+    {
+        residual[4] += 0;
+    }
+}
+
+CSourcePlasma::CSourcePlasma(unsigned short val_nDim, unsigned short val_nVar, const CConfig* config) :
+                  CSourceBase_Flow(val_nDim, val_nVar, config) {
+
+  /*--- Store the pointer to the constant body force vector. ---*/
+
+  for (unsigned short iDim = 0; iDim < 5; iDim++)
+    Plasma_Vector[iDim] = config->GetPlasma_Vector()[iDim];
+  nEdge=config->GetnEdge();
+  Coord_edge=config->GetCoord_edge();
+
+}
+
+CNumerics::ResidualType<> CSourcePlasma::ComputeResidual(const CConfig* config) {
+
+  unsigned short iDim;
+  su2double Force_Ref = config->GetForce_Ref();
+
+  /*--- Zero the continuity contribution ---*/
+
+  residual[0] = 0.0;
+
+  /*--- Momentum contribution ---*/
+  for (iDim = 0; iDim < nDim; iDim++)
+    residual[iDim+1] = 0.0;
+
+  unsigned short iedge, ix,iy,iz;
+  for (iedge=0;iedge<nEdge/3;iedge++){
+  ix=3*iedge;
+  iy=3*iedge+1;
+  iz=3*iedge+2;
+  su2double x_0[3];
+  x_0[0]=Coord_edge[ix];
+  x_0[1]=Coord_edge[iy];
+  x_0[2]=Coord_edge[iz];
+  su2double n[2]={0, 1};
+  
+  //compute source
+  DEFINE_SOURCE_x(x_0,n);
+  DEFINE_SOURCE_y(x_0,n);
+
+
+  /*--- Energy contribution ---*/
+
+  residual[nDim+1] = 0.0;
+  DEFINE_SOURCE_e(x_0);
+  }
+  return ResidualType<>(residual, jacobian, nullptr);
+}
+
+
+
 CSourceIncBodyForce::CSourceIncBodyForce(unsigned short val_nDim, unsigned short val_nVar, const CConfig* config) :
                      CSourceBase_Flow(val_nDim, val_nVar, config) {
 

@@ -135,7 +135,7 @@ fi
 # Build up contributed packages that we will build from source
 # --------------------------------------------------------------
 
-su2_externals_INCLUDES=""
+su2_externals_INCLUDES="-g"
 su2_externals_LIBS=""
 su2_externals_LIBPTHREAD=""
 

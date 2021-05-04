@@ -1035,6 +1035,10 @@ private:
   su2double *ExtraRelFacGiles;          /*!< \brief coefficient for extra relaxation factor for Giles BC*/
   bool Body_Force;                      /*!< \brief Flag to know if a body force is included in the formulation. */
   su2double *Body_Force_Vector;         /*!< \brief Values of the prescribed body force vector. */
+  unsigned short nEdge;
+  su2double *Coord_edge;             /*!< \brief Values of the prescribed body force vector. */
+  bool Plasma;                          /*!< \brief Flag to know if a body force is included in the formulation. */
+  su2double *Plasma_Vector;             /*!< \brief Values of the prescribed body force vector. */
   su2double *FreeStreamTurboNormal;     /*!< \brief Direction to initialize the flow in turbomachinery computation */
   su2double Restart_Bandwidth_Agg;      /*!< \brief The aggregate of the bandwidth for writing binary restarts (to be averaged later). */
   su2double Max_Vel2;                   /*!< \brief The maximum velocity^2 in the domain for the incompressible preconditioner. */
@@ -1090,6 +1094,7 @@ private:
   default_extrarelfac[2],        /*!< \brief Default extra relaxation factor for Giles BC in the COption class. */
   default_sineload_coeff[3],     /*!< \brief Default values for a sine load. */
   default_body_force[3],         /*!< \brief Default body force vector for the COption class. */
+  default_plasma[5],         /*!< \brief Default body force vector for the COption class. */
   default_nacelle_location[5],   /*!< \brief Location of the nacelle. */
   default_hs_axes[3],            /*!< \brief Default principal axes (x, y, z) of the ellipsoid containing the heat source. */
   default_hs_center[3],          /*!< \brief Default position of the center of the heat source. */
@@ -5891,6 +5896,26 @@ public:
    * \return A pointer to the body force vector.
    */
   const su2double* GetBody_Force_Vector(void) const { return Body_Force_Vector; }
+ 
+    /*!
+   * \brief Get information about the body force.
+   * \return <code>TRUE</code> if it uses a body force; otherwise <code>FALSE</code>.
+   */
+  unsigned short GetnEdge(void) const { return nEdge; }
+  const su2double *GetCoord_edge(void) const { return Coord_edge; }
+//Coord_edge=config->GetCoord_edge();
+
+    /*!
+   * \brief Get information about the body force.
+   * \return <code>TRUE</code> if it uses a body force; otherwise <code>FALSE</code>.
+   */
+  bool GetPlasma(void) const { return Plasma; }
+
+  /*!
+   * \brief Get a pointer to the body force vector.
+   * \return A pointer to the body force vector.
+   */
+  const su2double* GetPlasma_Vector(void) const { return Plasma_Vector; }
 
   /*!
    * \brief Get information about the volumetric heat source.

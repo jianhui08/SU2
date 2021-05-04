@@ -1856,6 +1856,9 @@ void CDriver::Numerics_Preprocessing(CConfig *config, CGeometry **geometry, CSol
       else if (incompressible && (config->GetKind_DensityModel() == BOUSSINESQ)) {
         numerics[iMGlevel][FLOW_SOL][source_first_term] = new CSourceBoussinesq(nDim, nVar_Flow, config);
       }
+      else if (config->GetPlasma() == YES) {
+        numerics[iMGlevel][FLOW_SOL][source_first_term] = new CSourcePlasma(nDim, nVar_Flow, config);
+      }
       else if (config->GetRotating_Frame() == YES) {
         if (incompressible)
           numerics[iMGlevel][FLOW_SOL][source_first_term] = new CSourceIncRotatingFrame_Flow(nDim, nVar_Flow, config);

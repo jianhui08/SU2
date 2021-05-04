@@ -1053,6 +1053,7 @@ void CConfig::SetPointersNull(void) {
   Kind_TimeNumScheme = EULER_IMPLICIT;
 
   Gas_Composition = nullptr;
+  Coord_edge =  nullptr;
 
 }
 
@@ -1118,6 +1119,13 @@ void CConfig::SetConfig_Options() {
   default_body_force[0] = 0.0; default_body_force[1] = 0.0; default_body_force[2] = 0.0;
   /* DESCRIPTION: Vector of body force values (BodyForce_X, BodyForce_Y, BodyForce_Z) */
   addDoubleArrayOption("BODY_FORCE_VECTOR", 3, Body_Force_Vector, default_body_force);
+  /* DESCRIPTION: Apply a body force as a source term (NO, YES) */
+  addUnsignedShortOption("NEDGE", nEdge, 0);
+  addDoubleListOption("COORD_EDGE", nEdge, Coord_edge);
+  addBoolOption("PLASMA", Plasma, false);
+  default_plasma[0] = 0.0; default_plasma[1] = 0.0; default_plasma[2] = 0.0; default_plasma[3] = 0.0;default_plasma[4] = 0.0;
+  /* DESCRIPTION: Vector of body force values (BodyForce_X, BodyForce_Y, BodyForce_Z) */
+  addDoubleArrayOption("PLASMA_VECTOR", 5, Plasma_Vector, default_plasma);
   /*!\brief RESTART_SOL \n DESCRIPTION: Restart solution from native solution file \n Options: NO, YES \ingroup Config */
   addBoolOption("RESTART_SOL", Restart, false);
   /*!\brief BINARY_RESTART \n DESCRIPTION: Read / write binary SU2 native restart files. \n Options: YES, NO \ingroup Config */
@@ -1156,6 +1164,7 @@ void CConfig::SetConfig_Options() {
   addEnumOption("TRANSPORT_COEFF_MODEL", Kind_TransCoeffModel, TransCoeffModel_Map, WILKE);
   /* DESCRIPTION: Specify mass fraction of each species */
   addDoubleListOption("GAS_COMPOSITION", nSpecies, Gas_Composition);
+
   /* DESCRIPTION: Specify if mixture is frozen */
   addBoolOption("FROZEN_MIXTURE", frozen, false);
   /* DESCRIPTION: Specify if there is ionization */

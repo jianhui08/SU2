@@ -138,6 +138,37 @@ public:
 };
 
 /*!
+ * \class CSourcePlasma
+ * \brief Class for the source term integration of a plasma.
+ * \ingroup SourceDiscr
+ * \author T. Economon
+ */
+class CSourcePlasma final : public CSourceBase_Flow {
+  unsigned short nEdge;
+  su2double Plasma_Vector[5];
+  const su2double *Coord_edge;
+
+public:
+  /*!
+   * \param[in] val_nDim - Number of dimensions of the problem.
+   * \param[in] val_nVar - Number of variables of the problem.
+   * \param[in] config - Definition of the particular problem.
+   */
+  CSourcePlasma(unsigned short val_nDim, unsigned short val_nVar, const CConfig* config);
+
+  /*!
+   * \brief Source term integration for a plasma.
+   * \param[in] config - Definition of the particular problem.
+   * \return Lightweight const-view of residual and Jacobian.
+   */
+  ResidualType<> ComputeResidual(const CConfig* config) override;
+
+  void DEFINE_SOURCE_x( su2double x_0[3], su2double n[2]);
+  void DEFINE_SOURCE_y(su2double x_0[3], su2double n[2]);
+  void DEFINE_SOURCE_e(su2double x_0[3]);
+};
+
+/*!
  * \class CSourceIncBodyForce
  * \brief Class for the source term integration of a body force in the incompressible solver.
  * \ingroup SourceDiscr

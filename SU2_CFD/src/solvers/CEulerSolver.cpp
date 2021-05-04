@@ -3046,6 +3046,7 @@ void CEulerSolver::Source_Residual(CGeometry *geometry, CSolver **solver_contain
   const bool harmonic_balance = (config->GetTime_Marching() == HARMONIC_BALANCE);
   const bool windgust         = config->GetWind_Gust();
   const bool body_force       = config->GetBody_Force();
+  const bool plasma           = config->GetPlasma();
 
   /*--- Pick one numerics object per thread. ---*/
   CNumerics* numerics = numerics_container[SOURCE_FIRST_TERM + omp_get_thread_num()*MAX_TERMS];
@@ -3065,6 +3066,30 @@ void CEulerSolver::Source_Residual(CGeometry *geometry, CSolver **solver_contain
 
       /*--- Load the volume of the dual mesh cell ---*/
       numerics->SetVolume(geometry->nodes->GetVolume(iPoint));
+
+      /*--- Compute the rotating frame source residual ---*/
+      auto residual = numerics->ComputeResidual(config);
+
+      /*--- Add the source residual to the total ---*/
+      LinSysRes.AddBlock(iPoint, residual);
+
+    }
+  }
+
+  
+  if (plasma) {
+
+    /*--- Loop over all points ---*/
+    SU2_OMP_FOR_STAT(omp_chunk_size)
+    for (iPoint = 0; iPoint < nPointDomain; iPoint++) {
+
+      /*--- Load the conservative variables ---*/
+      numerics->SetConservative(nodes->GetSolution(iPoint),
+                                nodes->GetSolution(iPoint));
+
+      /*--- Load the volume of the dual mesh cell ---*/
+      numerics->SetVolume(geometry->nodes->GetVolume(iPoint));
+      numerics->SetCoord(geometry->nodes->GetCoord(iPoint),geometry->nodes->GetCoord(iPoint));
 
       /*--- Compute the rotating frame source residual ---*/
       auto residual = numerics->ComputeResidual(config);
